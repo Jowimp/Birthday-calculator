@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Мой день рождения — интерактивный счётчик</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#2a1a4a">
+<link rel="icon" href="favicon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Мой ДР">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:linear-gradient(135deg,#2b1a4e 0%,#1a0f35 45%,#0d0821 100%);min-height:100vh;
+color:#f0eef8;font-family:'Segoe UI',Verdana,Arial,sans-serif;padding:24px 12px}
+.wrap{max-width:780px;margin:0 auto}
+.hidden{display:none!important}
+.card{background:linear-gradient(160deg,rgba(44,24,78,.95),rgba(26,14,48,.95));
+border:1px solid rgba(255,170,60,.14);border-radius:18px;padding:22px;margin:18px 0;
+box-shadow:0 10px 34px rgba(0,0,0,.5)}
+.card:hover{border-color:rgba(255,190,80,.35)}
+h1{color:#ffb347;font-size:34px;text-align:center;text-shadow:0 0 18px rgba(255,140,20,.5)}
+.sub{text-align:center;color:#b9a8d8;margin:8px 0 4px}
+h2{color:#ffd54a;font-size:22px;margin-bottom:14px;text-shadow:0 0 10px rgba(255,200,60,.35)}
+.clock-card{text-align:center;padding:28px 22px}
+#clockTime{font-size:62px;font-weight:800;color:#ffd54a;letter-spacing:4px;
+text-shadow:0 0 12px rgba(255,180,40,.95),0 0 36px rgba(255,120,20,.6),0 0 80px rgba(255,80,0,.4);
+animation:glowPulse 2.4s ease-in-out infinite}
+@keyframes glowPulse{50%{filter:brightness(1.22)}}
+#clockDate{color:#cfc6e8;margin-top:8px;font-size:16px}
+label{display:block;font-size:13px;color:#c9bfe4;margin:10px 0 5px}
+input[type=text],input[type=number]{width:100%;padding:11px 14px;border-radius:12px;border:1px solid #4a3a6e;
+background:#1b1130;color:#fff;font-size:16px;outline:none}
+input:focus{border-color:#ffb347;box-shadow:0 0 12px rgba(255,170,60,.45)}
+.row3{display:flex;gap:12px}.row3>div{flex:1}
+.btn{display:inline-block;margin-top:16px;padding:12px 26px;border:none;border-radius:12px;cursor:pointer;
+font-size:16px;font-weight:700;color:#2b1a00;background:linear-gradient(90deg,#ffb347,#ffd54a);
+box-shadow:0 4px 18px rgba(255,160,30,.45);transition:.2s}
+.btn:hover{transform:translateY(-2px);box-shadow:0 6px 24px rgba(255,180,60,.65)}
+.btn2{background:transparent;color:#ffd54a;border:1px solid #5a4a80;box-shadow:none}
+.big-days{font-size:96px;font-weight:800;text-align:center;line-height:1;color:#ffd54a;
+text-shadow:0 0 14px rgba(255,180,40,.95),0 0 40px rgba(255,110,20,.6),0 0 90px rgba(255,70,0,.4);
+animation:glowPulse 2.8s ease-in-out infinite}
+.days-label{font-size:20px;color:#ffb347;font-weight:700;text-align:center;margin-top:2px}
+.center{text-align:center;color:#cfc6e8;margin-top:8px}
+.pbar{height:22px;border-radius:12px;background:#241a3e;overflow:hidden;margin:18px 0 8px}
+.pfill{height:100%;border-radius:12px;background:linear-gradient(90deg,#ffb347,#ff6b35);
+box-shadow:0 0 16px rgba(255,140,40,.6);transition:width 1s ease}
+.pulse{animation:barPulse 2.2s ease-in-out infinite}
+@keyframes barPulse{50%{box-shadow:0 0 26px rgba(255,160,50,.85)}}
+.detail-row{background:rgba(60,35,100,.35);border:1px solid rgba(255,255,255,.06);border-radius:12px;
+padding:12px 14px;margin:10px 0;font-size:15.5px;line-height:1.5}
+.detail-row b{color:#ffd54a}
+.medals{display:flex;gap:14px;flex-wrap:wrap;margin-top:6px}
+.medal{flex:1;min-width:150px;text-align:center;background:rgba(70,40,120,.4);border:1px solid rgba(255,190,90,.25);
+border-radius:16px;padding:16px 10px;box-shadow:inset 0 0 22px rgba(255,170,60,.12)}
+.medal .e{font-size:44px;filter:drop-shadow(0 0 10px rgba(255,190,80,.7))}
+.medal .t{margin-top:6px;font-weight:700;color:#ffd54a}
+.medal .s{font-size:13px;color:#c9bfe4;margin-top:3px}
+.skybox{text-align:center;padding:6px 4px}
+.sky-moon{font-size:58px;line-height:1;margin-bottom:10px;filter:drop-shadow(0 0 18px rgba(255,214,74,.75))}
+.sky-sun{color:#c9bfe4;font-size:14px;margin-top:8px}
+.sky-z{display:inline-block;background:#4a2a78;border:1px solid rgba(255,213,74,.45);border-radius:7px;padding:0 6px;margin-left:2px;filter:drop-shadow(0 0 6px rgba(255,190,80,.5))}
+.sky-tip{color:#8f81b8;font-size:13.5px;margin-top:8px}
+.ev{display:flex;gap:12px;align-items:baseline;background:#251430;border:1px solid #3a2040;
+border-radius:12px;padding:12px 14px;margin:9px 0;font-size:14.5px;line-height:1.5}
+.ev:hover{border-color:#7a4a10;box-shadow:0 0 14px rgba(255,160,50,.25)}
+.yb{flex-shrink:0;min-width:56px;text-align:center;font-weight:800;color:#ffd54a;font-size:14px;
+background:rgba(255,170,60,.12);border:1px solid rgba(255,180,70,.35);border-radius:9px;padding:3px 7px}
+.ev a{color:#ffb347;text-decoration:none;white-space:nowrap;filter:drop-shadow(0 0 5px rgba(255,160,50,.5))}
+.ev a:hover{border-bottom:1px solid #ffb347}
+.tabs{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.tab{padding:9px 16px;border-radius:11px;border:1px solid #4a3a6e;background:#1b1130;color:#b9a8d8;cursor:pointer;font-size:14px}
+.tab.on{border-color:#ffd54a;color:#ffd54a;box-shadow:0 0 12px rgba(255,200,70,.4)}
+.chart-row{display:flex;align-items:center;gap:10px;margin:10px 0;font-size:14px}
+.chart-row .nm{width:170px;flex-shrink:0}
+.cb{flex:1;height:14px;background:#241a3e;border-radius:8px;overflow:hidden}
+.cb i{display:block;height:100%;border-radius:8px;box-shadow:0 0 10px currentColor}
+.chart-row .v{width:46px;text-align:right;color:#cfc6e8}
+li{margin:7px 0 7px 20px}
+.small{font-size:12.5px;color:#8f81b8;margin-top:12px;line-height:1.5}
+.candle{width:26px;height:70px;margin:18px auto 4px;background:linear-gradient(180deg,#f7e8c8,#e8c98a);border-radius:6px;position:relative}
+.flame{position:absolute;top:-26px;left:50%;transform:translateX(-50%);width:18px;height:30px;
+background:radial-gradient(circle at 50% 65%,#fff7c0 0%,#ffcf3d 45%,#ff7a00 75%,transparent 78%);
+border-radius:50% 50% 45% 45%;animation:flame .45s ease-in-out infinite alternate;filter:drop-shadow(0 0 14px rgba(255,160,30,.9))}
+@keyframes flame{from{transform:translateX(-50%) scale(1)}to{transform:translateX(-50%) scale(1.14,1.28)}}
+#confettiCv{position:fixed;inset:0;pointer-events:none;z-index:50}
+.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-top:10px}
+.cal .h{color:#8f81b8;font-size:12px;text-align:center;padding:4px 0}
+.cal .d{text-align:center;padding:8px 0;border-radius:9px;background:rgba(60,35,100,.35);font-size:14px}
+.cal .d.today{background:linear-gradient(135deg,#ffb347,#ff6b35);color:#2b1a00;font-weight:800;
+box-shadow:0 0 14px rgba(255,160,40,.8)}
+.cal .h.wknd{color:#ff8a8a}
+.cal .d.wknd{color:#ff8a8a;background:rgba(255,80,60,.16)}
+.cal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.cal-nav{background:none;border:1px solid #4a3a6e;color:#ffd54a;border-radius:9px;padding:5px 13px;cursor:pointer;font-size:16px}
+.gift-item{display:flex;align-items:center;gap:10px;background:rgba(60,35,100,.35);border-radius:10px;padding:10px 12px;margin:8px 0}
+.gift-item.done span{text-decoration:line-through;color:#8f81b8}
+.tag-y{background:rgba(255,213,74,.15);color:#ffd54a;border-radius:6px;padding:1px 8px;font-size:12.5px;margin-left:4px;white-space:nowrap}
+.fam-item{background:rgba(60,35,100,.35);border-radius:10px;padding:10px 12px;margin:8px 0;font-size:14.5px}
+.link-y{color:#ffb347}
+@media print{body{background:#fff;color:#111;padding:0}.card{background:#fff;border:1px solid #ddd;box-shadow:none;color:#111}
+.no-print{display:none!important}#clockTime,.big-days{color:#222;text-shadow:none;animation:none}
+h1,h2{color:#222;text-shadow:none}.detail-row,.gift-item,.fam-item,.ev,.medal{background:#f7f7f7;border-color:#ddd}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div class="card clock-card">
+  <div id="clockTime">--:--:--</div>
+  <div id="clockDate"></div>
+</div>
+
+<h1>Мой день рождения</h1>
+<p class="sub">День недели, возраст, знаки, счётчик и всё-всё-всё</p>
+
+<div class="card">
+  <div class="row3">
+    <div><label>День</label><input type="number" id="dD" min="1" max="31" placeholder="16"></div>
+    <div><label>Месяц (1–12)</label><input type="number" id="dM" min="1" max="12" placeholder="5"></div>
+    <div><label>Год</label><input type="number" id="dY" placeholder="2006"></div>
+  </div>
+  <button class="btn" id="btnGo">Рассчитать</button>
+  <button class="btn btn2 no-print" id="btnPdf">🖨 Сохранить в PDF</button>
+</div>
+
+<div class="card hidden" id="festiveCard">
+  <h2>🎈 С Днём рождения!</h2>
+  <div class="candle"><div class="flame" id="flame"></div></div>
+  <div class="center" id="festiveMsg">Задуй свечу и загадай желание!</div>
+  <button class="btn" id="btnBlow">Задуть свечу</button>
+  <button class="btn btn2" id="btnSong">🎵 Спеть Happy Birthday</button>
+</div>
+
+<div class="card hidden" id="cdCard">
+  <h2>🎈 До следующего дня рождения</h2>
+  <div class="big-days" id="cdDays">—</div>
+  <div class="days-label">дней</div>
+  <div class="center" id="cdDate"></div>
+  <div class="center" id="cdWeeks"></div>
+  <div class="pbar"><div class="pfill pulse" id="cdFill"></div></div>
+  <div class="center" id="cdPassed"></div>
+</div>
+
+<div class="card hidden" id="detCard">
+  <h2>📋 Подробности</h2>
+  <div class="detail-row" id="detBorn"></div>
+  <div class="detail-row" id="detAge"></div>
+  <div class="detail-row" id="detTotal"></div>
+    <div class="detail-row"><b>🚩 Знаменательные пороги:</b><ul id="detMile"></ul></div>
+  <div class="detail-row" id="detHalf"></div>
+</div>
+
+<div class="card hidden" id="signCard">
+  <h2>✨ Знаки и символы</h2>
+  <div class="medals" id="medals"></div>
+  <div class="detail-row" id="destRow" style="margin-top:14px"></div>
+  </div>
+
+<div class="card hidden" id="skyCard">
+  <h2>🌙 Небо в день рождения</h2>
+  <div class="detail-row" id="moonRow"></div>
+</div>
+
+<div class="card hidden" id="calCard">
+  <h2>📅 Календарь месяца рождения</h2>
+  <div class="cal-head">
+    <button class="cal-nav" id="calPrev">‹</button>
+    <b id="calTitle" style="color:#ffd54a"></b>
+    <button class="cal-nav" id="calNext">›</button>
+  </div>
+  <div class="cal" id="calGrid"></div>
+</div>
+
+<div class="card hidden" id="histCard">
+  <h2>📰 Этот день в истории</h2>
+  <div class="tabs no-print">
+    <button class="tab" id="tRu">🇷🇺 Новости России за эту дату</button>
+    <button class="tab" id="tWorld">🌍 Новости мира за эту дату</button>
+    <button class="tab" id="tKomm">📄 Архив «Коммерсанта»</button>
+  </div>
+  <div id="histLists"><div class="center">Загружаю события с сервера Википедии…</div></div>
+</div>
+
+<div class="card hidden" id="longCard">
+  <h2>📊 Сравнение долгожительства</h2>
+  <div id="longChart"></div>
+  <div class="small">≈ — средние значения по видам. 122 года — рекорд Жанны Кальман (Книга рекордов Гиннесса). Средняя по миру ≈73 года (ВОЗ).</div>
+</div>
+
+<div class="card">
+  <h2>👨‍👩‍👧 Сравнение с родными</h2>
+  <div class="row3">
+    <div><label>Имя</label><input type="text" id="famName" placeholder="Мама"></div>
+    <div><label>Дата рождения</label><input type="text" id="famDate" placeholder="04.07.1978"></div>
+  </div>
+  <button class="btn" id="btnFam">Добавить</button>
+  <div id="famList"></div>
+</div>
+
+<div class="card">
+  <h2>🎁 Планировщик подарков</h2>
+  <div style="display:flex;gap:10px">
+    <input type="text" id="giftIn" placeholder="Идея подарка…" style="flex:1">
+    <input type="text" id="giftFor" placeholder="Кому? (необязательно)" style="flex:1">
+    <button class="btn" id="btnGift" style="margin-top:0">＋</button>
+  </div>
+  <div class="small" id="giftCount" style="margin-top:8px"></div>
+  <div id="giftList"></div>
+  <div class="small">Список сохраняется в браузере — не потеряется после перезагрузки.</div>
+</div>
+
+<div class="small no-print" style="text-align:center">Разработчик — Александр Бекишев · Креативный директор — Савватеева Екатерина · Редактор — Алиса AI</div>
+</div>
+<canvas id="confettiCv"></canvas>
+
+<script>
+var LNY="1900:0131,1901:0219,1902:0208,1903:0129,1904:0216,1905:0204,1906:0125,1907:0213,1908:0202,1909:0122,1910:0210,1911:0130,1912:0218,1913:0206,1914:0126,1915:0214,1916:0203,1917:0123,1918:0211,1919:0201,1920:0220,1921:0208,1922:0128,1923:0216,1924:0205,1925:0125,1926:0213,1927:0202,1928:0123,1929:0210,1930:0130,1931:0217,1932:0206,1933:0126,1934:0214,1935:0204,1936:0124,1937:0211,1938:0131,1939:0219,1940:0208,1941:0127,1942:0215,1943:0205,1944:0125,1945:0213,1946:0202,1947:0122,1948:0210,1949:0129,1950:0217,1951:0206,1952:0127,1953:0214,1954:0203,1955:0124,1956:0212,1957:0131,1958:0218,1959:0208,1960:0128,1961:0215,1962:0205,1963:0125,1964:0213,1965:0202,1966:0121,1967:0209,1968:0130,1969:0217,1970:0206,1971:0127,1972:0215,1973:0203,1974:0123,1975:0211,1976:0131,1977:0218,1978:0207,1979:0128,1980:0216,1981:0205,1982:0125,1983:0213,1984:0202,1985:0220,1986:0209,1987:0129,1988:0217,1989:0206,1990:0127,1991:0215,1992:0204,1993:0123,1994:0210,1995:0131,1996:0219,1997:0207,1998:0128,1999:0216,2000:0205,2001:0124,2002:0212,2003:0201,2004:0122,2005:0209,2006:0129,2007:0218,2008:0207,2009:0126,2010:0214,2011:0203,2012:0123,2013:0210,2014:0131,2015:0219,2016:0208,2017:0128,2018:0216,2019:0205,2020:0125,2021:0212,2022:0201,2023:0122,2024:0210,2025:0129,2026:0217,2027:0206,2028:0126,2029:0213,2030:0203";
+var ANIMALS=["Крыса","Бык","Тигр","Кролик","Дракон","Змея","Лошадь","Коза","Обезьяна","Петух","Собака","Свинья"];
+var ANIM_E=["🐀","🐂","🐅","🐇","🐉","🐍","🐎","🐐","🐒","🐓","🐕","🐖"];
+var ELEMENTS=["Металл","Металл","Вода","Вода","Дерево","Дерево","Огонь","Огонь","Земля","Земля"];
+var EMO_E={"Металл":"⚙️","Вода":"💧","Дерево":"🌳","Огонь":"🔥","Земля":"🌍"};
+var ADJ_M=["Металлический","Водяной","Деревянный","Огненный","Земляной"],ADJ_F=["Металлическая","Водяная","Деревянная","Огненная","Земляная"];
+var MN=['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];
+var MN2=['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
+var WD=['воскресенье','понедельник','вторник','среда','четверг','пятница','суббота'];
+var ZOD=[
+ [1,1,1,19,"Козерог","♑","оникс","фиалка"],[1,20,2,18,"Водолей","♒","аметист","орхидея"],
+ [2,19,3,20,"Рыбы","♓","аквамарин","лилия"],[3,21,4,19,"Овен","♈","алмаз","тюльпан"],
+ [4,20,5,20,"Телец","♉","изумруд","ландыш"],[5,21,6,20,"Близнецы","♊","агат","ромашка"],
+ [6,21,7,22,"Рак","♋","жемчуг","белая лилия"],[7,23,8,22,"Лев","♌","рубин","подсолнух"],
+ [8,23,9,22,"Дева","♍","сапфир","ноготки"],[9,23,10,22,"Весы","♎","опал","роза"],
+ [10,23,11,21,"Скорпион","♏","гранат","хризантема"],[11,22,12,21,"Стрелец","♐","бирюза","гвоздика"],
+ [12,22,12,31,"Козерог","♑","оникс","фиалка"]];
+
+var DEST=["1 — число лидера: инициатива, самостоятельность, умение прокладывать свой путь. В плюсе — смелость и решительность, в минусе — упрямство",
+"2 — число дипломата: чуткость, умение слышать людей и быть связующим звеном. В плюсе — миротворчество и верность в дружбе, в минусе — нерешительность",
+"3 — число творца: лёгкость на подъём, воображение и общительность. В плюсе — вдохновение для окружающих, в минусе — разбрасывание сил на десять дел сразу",
+"4 — число труженика: надёжность, порядок, терпение и практичность. В плюсе — умение доводить дела до конца, в минусе — приверженность привычному",
+"5 — число свободы: путешествия, живой ум и любовь к переменам. В плюсе — адаптивность и азарт к новому, в минусе — непостоянство",
+"6 — число хранителя: забота, дом, верность, чувство ответственности. В плюсе — тёплый уют вокруг себя, в минусе — привычка переживать за всех и вся",
+"7 — число мудреца: интуиция, анализ и внутренняя глубина. В плюсе — способность видеть скрытое, в минусе — склонность уходить в себя",
+"8 — число стратега: сила, амбиции и организаторский дар. В плюсе — умение добиваться больших целей, в минусе — риск работать на износ",
+"9 — число гуманиста: великодушие, эмпатия и служение людям. В плюсе — широкий взгляд на мир, в минусе — привычка ставить чужое выше своего"];
+
+function $id(x){return document.getElementById(x)}
+function pad(n){return (n<10?"0":"")+n}
+function fmt(d){return d.getDate()+"."+(d.getMonth()+1)+"."+d.getFullYear()}
+function fmtLong(d){return d.getDate()+" "+MN[d.getMonth()]+" "+d.getFullYear()}
+function lny(y){var a=LNY.split(","),i;for(i=0;i<a.length;i++)if(+a[i].slice(0,4)===y)return a[i].slice(4);return null}
+function chinese(y,m,d){var ly=y,s=lny(y);
+ if(s){var mm=+s.slice(0,2),dd=+s.slice(2);if(m<mm||(m===mm&&d<dd))ly=y-1;}
+ var idx=((ly-1900)%12+12)%12, ei=((ly-1900)%10+10)%10;
+ var fem=[0,5,6,7,8,10,11].indexOf(idx)>=0;return {animal:ANIMALS[idx],emoji:ANIM_E[idx],element:ELEMENTS[ei],eEmoji:EMO_E[ELEMENTS[ei]],lyear:ly,adj:(fem?ADJ_F:ADJ_M)[Math.floor(ei/2)]};}
+function zodiac(m,d){var i,z,mm=+m,dd=+d;
+ for(i=0;i<ZOD.length;i++){z=ZOD[i];
+  var after=mm>z[0]||(mm===z[0]&&dd>=z[1]);
+  var before=mm<z[2]||(mm===z[2]&&dd<=z[3]);
+  if(after&&before)return z;}
+ return ZOD[3];}
+function nextBirthday(bd,today){var y=today.getFullYear(),c=new Date(y,bd.getMonth(),bd.getDate());
+ if(c<today)c=new Date(y+1,bd.getMonth(),bd.getDate());return c}
+function lastBirthday(bd,cand){return new Date(cand.getFullYear()-1,bd.getMonth(),bd.getDate())}
+function moonPhase(y,m,d){var jd=(Date.UTC(y,m-1,d)-Date.UTC(2000,0,6,18,14))/86400000;
+ var ph=((jd/29.53058867)%1+1)%1;
+ if(ph<0.03||ph>0.97)return["🌑","Новолуние"];if(ph<0.22)return["🌒","Растущий месяц"];
+ if(ph<0.28)return["🌓","Первая четверть"];if(ph<0.47)return["🌔","Растущая луна"];
+ if(ph<0.53)return["🌕","Полнолуние"];if(ph<0.72)return["🌖","Убывающая луна"];
+ if(ph<0.78)return["🌗","Последняя четверть"];return["🌘","Убывающий месяц"];}
+function destiny(y,m,d){var s=(y+"").split("").concat((m<10?"0"+m:""+m).split(""),(d<10?"0"+d:""+d).split(""));
+ var t=0,i;for(i=0;i<s.length;i++)t+=+s[i];var n=t%9;return n===0?9:n;}
+function show(id){$id(id).classList.remove("hidden")}
+
+/* Часы */
+setInterval(function(){var n=new Date();
+ $id("clockTime").textContent=pad(n.getHours())+":"+pad(n.getMinutes())+":"+pad(n.getSeconds());
+ $id("clockDate").textContent=fmtLong(n)+", "+WD[n.getDay()];},500);
+
+/* Главный расчёт */
+var BD=null,BDAY=false;
+$id("btnGo").onclick=function(){
+ var dd=+$id("dD").value,mm=+$id("dM").value,yy=+$id("dY").value;
+ if(!dd||!mm||!yy||yy<1900||yy>2030){alert("Проверь день, месяц и год (1900–2030)");return;}
+ if(mm<1||mm>12||dd<1||dd>31){alert("Такой даты не бывает 🙂");return;}
+ BD=new Date(yy,mm-1,dd);
+ if(BD.getMonth()!==mm-1||BD.getDate()!==dd){alert("Такой даты не существует!");return;}
+ renderAll();
+};
+
+function renderAll(){
+ var today=new Date();today.setHours(0,0,0,0);
+ var nb=nextBirthday(BD,today), dt=nb.getTime()-today.getTime();
+ var daysTo=Math.round(dt/86400000);
+ BDAY=(daysTo===0);
+ var lb=lastBirthday(BD,nb);
+ var daysSince=Math.round((today-lb)/86400000);
+ var total=Math.round((today-BD)/86400000);
+ var yrs=today.getFullYear()-BD.getFullYear();
+ var tmp=new Date(today.getFullYear(),BD.getMonth(),BD.getDate());
+ if(tmp>today)yrs--;
+ /* Счётчик */
+ if(BDAY){
+  $id("cdDays").textContent="🎉";$id("cdDays").style.fontSize="80px";
+  $id("cdDate").textContent="Сегодня твой день рождения!";$id("cdWeeks").textContent="Ты становишься старше — и красивее 😎";
+  $id("cdPassed").textContent="Прожито всего: "+total+" дней";
+  show("festiveCard");launchConfetti();
+ }else{
+  $id("cdDays").style.fontSize="96px";$id("cdDays").textContent=daysTo;
+  $id("cdDate").textContent="Дата: "+fmt(nb)+" — "+WD[nb.getDay()];
+  $id("cdWeeks").textContent="Это полных "+Math.floor(daysTo/7)+" "+plural(Math.floor(daysTo/7),"неделя","недели","недель")+" и "+(daysTo%7)+" "+plural(daysTo%7,"день","дня","дней");
+  $id("cdPassed").textContent="Прошло с последнего ДР: "+daysSince+" · осталось: "+daysTo;
+  $id("festiveCard").classList.add("hidden");
+ }
+ $id("cdFill").style.width=Math.round(daysSince/(daysSince+daysTo)*100)+"%";
+ /* Подробности */
+ $id("detBorn").innerHTML="📅 Дата рождения: <b>"+fmt(BD)+"</b> — вы родились в <b>"+WD[BD.getDay()]+"</b>";
+ $id("detAge").innerHTML="🎂 Возраст: <b>"+yrs+" "+plural(yrs,"год","года","лет")+"</b> (с последнего ДР прошло "+daysSince+" дн.)";
+ $id("detTotal").innerHTML="⏳ Всего прожито дней: <b>"+total+"</b>";
+ /* Пороги */
+ $id("detMile").innerHTML=milestones(BD,today,total,yrs);
+ var half=new Date(lb.getTime()+Math.floor((nb-lb)/2));
+ $id("detHalf").innerHTML="🎈 Полюбинчик (середина до следующего ДР): <b>"+fmt(half)+"</b> — "+WD[half.getDay()];
+ /* Знаки */
+ var z=zodiac(BD.getMonth()+1,BD.getDate());
+ var ch=chinese(BD.getFullYear(),BD.getMonth()+1,BD.getDate());
+ $id("medals").innerHTML=
+  '<div class="medal"><div class="e">'+z[5]+'</div><div class="t">'+z[4]+'</div><div class="s">знак зодиака</div></div>'+
+  '<div class="medal"><div class="e">'+ch.emoji+'</div><div class="t">'+ch.adj+' '+ch.animal+'</div><div class="s">восточный знак, лунный год '+ch.lyear+'</div></div>'+
+  '<div class="medal"><div class="e" style="font-size:30px">💎</div><div class="t" style="font-size:16px">'+z[6]+'</div><div class="s">камень талисман</div><div class="e" style="font-size:30px;margin-top:8px">🌸</div><div class="t" style="font-size:16px">'+z[7]+'</div><div class="s">цветок знака</div></div>';
+ var dn=destiny(BD.getFullYear(),BD.getMonth()+1,BD.getDate());
+ $id("destRow").innerHTML="🔢 Число судьбы: <b>"+dn+"</b> — "+DEST[dn-1].replace(/^[0-9]+ — /,"");
+ 
+ /* Небо */
+ var mp=moonPhase(BD.getFullYear(),BD.getMonth()+1,BD.getDate());
+ var zz=zodiac(BD.getMonth()+1,BD.getDate());
+ $id("moonRow").innerHTML="<div class='skybox'><div class='sky-moon'>"+mp[0]+"</div><div>В ночь вашего рождения луна была в фазе <b>"+mp[1]+"</b></div><div class='sky-sun'>Солнце в этот день находилось в созвездии "+zz[3]+" <span class='sky-z'>"+zz[5]+"</span></div><div class='sky-tip'>Найди ясную ночь и посмотри на такую же луну 🙂</div></div>";
+ /* Календарь */
+ calY=BD.getFullYear();calM=BD.getMonth();drawCal();
+ /* График */
+ drawLong(yrs);
+ /* История */
+ loadHistory(BD.getFullYear(),BD.getMonth()+1,BD.getDate());
+ /* Показать все */
+ ["cdCard","detCard","signCard","skyCard","calCard","histCard","longCard"].forEach(show);
+ $id("histCard").scrollIntoView({behavior:"smooth",block:"start"});
+}
+function plural(n,a,b,c){var m=n%100,h=n%10;
+ if(m>=11&&m<=14)return c;if(h===1)return a;if(h>=2&&h<=4)return b;return c}
+function milestones(bd,today,total,yrs){
+ var out=[],d=new Date(bd),k;
+ k=Math.ceil((total+1)/1000)*1000;
+ for(var i=0;i<3;i++){out.push({date:new Date(bd.getTime()+(k+i*1000)*86400000),
+  label:(k+i*1000)+"-й день жизни"});}
+ for(var a=yrs+1;a<=yrs+40;a++)if(a%5===0){
+  out.push({date:new Date(bd.getFullYear()+a,bd.getMonth(),bd.getDate()),label:a+" лет"});break;}
+ out.sort(function(x,y){return x.date-y.date});
+ var seen={},res=[];
+ for(i=0;i<out.length;i++){var f=fmt(out[i].date);
+  if(!seen[f]){seen[f]=1;
+   res.push("<li>"+out[i].label+" — <b>"+f+"</b> ("+WD[out[i].date.getDay()]+", через "+
+    Math.round((out[i].date-today)/86400000)+" дн.)</li>");}
+  if(res.length>=4)break;}
+ return res.join("");}
+/* Календарь */
+var calY,calM;
+function drawCal(){var g=$id("calGrid");g.innerHTML="";
+ $id("calTitle").textContent=MN2[calM]+" "+calY;
+ var first=new Date(calY,calM,1),off=(first.getDay()+6)%7,dim=new Date(calY,calM+1,0).getDate();
+ var h=["Пн","Вт","Ср","Чт","Пт","Сб","Вс"],i;
+ for(i=0;i<7;i++)g.innerHTML+='<div class="h'+(i>=5?' wknd':'')+'">'+h[i]+'</div>';
+ for(i=0;i<off;i++)g.innerHTML+='<div class="d"></div>';
+ var isBirthMonth=(calY===BD.getFullYear()&&calM===BD.getMonth());
+ for(i=1;i<=dim;i++)g.innerHTML+='<div class="d'+(isBirthMonth&&i===BD.getDate()?" today":((off+i-1)%7>=5?" wknd":""))+'">'+i+'</div>';}
+$id("calPrev").onclick=function(){calM--;if(calM<0){calM=11;calY--}drawCal()};
+$id("calNext").onclick=function(){calM++;if(calM>11){calM=0;calY++}drawCal()};
+/* График долгожительства */
+function drawLong(age){
+ var rows=[["Хомяк ≈",3,"#8a7bd8"],["Кролик ≈",9,"#8a7bd8"],["Собака ≈",13,"#8a7bd8"],
+ ["Кошка ≈",15,"#8a7bd8"],["Лошадь ≈",25,"#8a7bd8"],["Слон ≈",65,"#8a7bd8"],
+ ["Человек (средняя)",73,"#ff8c42"],["Попугай ара ≈",75,"#8a7bd8"],
+ ["Жанна Кальман, 122",122,"#ffd54a"],["Гигантская черепаха",150,"#8a7bd8"]];
+ rows.push(["__ME__",age,"#4caf50"]);
+ rows.sort(function(a,b){return a[1]-b[1]});
+ var html="",i,r;
+ for(i=0;i<rows.length;i++){r=rows[i];
+  var me=r[0]==="__ME__";
+  html+='<div class="chart-row"><div class="nm"'+(me?' style="color:#6fe28a;font-weight:800"':'')+'>'+
+   (me?"Твой возраст":r[0])+'</div><div class="cb"><i'+(me?' class="pulse"':'')+' style="width:'+
+   (r[1]/150*100).toFixed(1)+"%;background:"+r[2]+';color:'+r[2]+'"></i></div><div class="v"'+
+   (me?' style="color:#6fe28a;font-weight:800"':'')+'>'+r[1]+'</div></div>';}
+ $id("longChart").innerHTML=html;}
+/* История: Википедия */
+function loadHistory(yy,mm,dd){
+ var p=(mm<10?"0":"")+mm+"/"+(dd<10?"0":"")+dd;
+ var el=$id("histLists");
+ el.innerHTML='<div class="center">Загружаю события с сервера Википедии…</div>';
+ var urls=["https://ru.wikipedia.org/api/rest_v1/feed/onthisday/all/"+p,
+           "https://api.wikimedia.org/feed/v1/wikipedia/ru/onthisday/all/"+p,
+           "https://en.wikipedia.org/api/rest_v1/feed/onthisday/all/"+p];
+ function withTimeout(ms){
+  var ctl=new AbortController();
+  setTimeout(function(){ctl.abort();},ms);
+  return ctl.signal;
+ }
+ function tryFetch(k){
+  fetch(urls[k],{signal:withTimeout(10000)})
+  .then(function(r){if(!r.ok)throw new Error("HTTP "+r.status);return r.json()})
+  .then(function(j){renderHistory(j,yy,k===2);})
+  .catch(function(err){
+   if(k+1<urls.length){tryFetch(k+1);}
+   else{
+    var why=(err&&err.name==="AbortError")?"сервер не ответил за 10 секунд":
+            ((err&&err.message)?err.message:"нет соединения");
+    el.innerHTML='<div class="center">📡 Не удалось загрузить события ('+why+'). Кнопки поиска работают всегда!</div>';
+   }
+  });
+ }
+ tryFetch(0);}
+function renderHistory(j,bdYear,eng){
+ var evs=j.events||[],bir=j.births||[],html="",i,e;
+ if(!evs.length&&!bir.length)throw new Error("лента пуста");
+ function link(ev){
+  if(ev.pages&&ev.pages[0]&&ev.pages[0].content_urls&&ev.pages[0].content_urls.desktop)
+   return ' <a href="'+ev.pages[0].content_urls.desktop.page+'" target="_blank">читать →</a>';
+  return "";
+ }
+ evs.sort(function(a,b){return b.year-a.year});
+ var ep=[],an=[];
+ for(i=0;i<evs.length;i++){(evs[i].year>=1900?ep:an).push(evs[i]);}
+ if(eng)html+='<div class="small" style="margin-bottom:8px">🌐 Русская лента недоступна — показаны события английской Википедии.</div>';
+ html+='<h2 style="font-size:18px">🔥 В вашу эпоху (с 1900 года)</h2>';
+ for(i=0;i<Math.min(ep.length,8);i++){e=ep[i];
+  html+='<div class="ev"><span class="yb">'+(e.year===bdYear?"🎂 "+e.year:e.year)+'</span><span>'+e.text+link(e)+'</span></div>';}
+ html+='<h2 style="font-size:18px;margin-top:16px">🏛 Столетия тому назад</h2>';
+ for(i=0;i<Math.min(an.length,6);i++){e=an[i];
+  html+='<div class="ev"><span class="yb">'+e.year+'</span><span>'+e.text+link(e)+'</span></div>';}
+ html+='<h2 style="font-size:18px;margin-top:16px">🎂 Кто родился в один день с тобой</h2>';
+ for(i=0;i<Math.min(bir.length,6);i++){e=bir[i];
+  html+='<div class="ev"><span class="yb">'+e.year+'</span><span>'+e.text+link(e)+'</span></div>';}
+ html+='<div class="small">Данные — открытый API Википедии. События совпадают по календарному дню, независимо от года.</div>';
+ $id("histLists").innerHTML=html;}
+/* Кнопки поиска новостей */
+$id("tRu").onclick=function(){var d=BD;window.open("https://yandex.ru/search/?text=новости%20России%20"+fmt(d),"_blank")};
+$id("tWorld").onclick=function(){var d=BD;window.open("https://yandex.ru/search/?text=мировые%20новости%20"+fmt(d),"_blank")};
+$id("tKomm").onclick=function(){var d=BD;window.open("https://yandex.ru/search/?text=site%3Akommersant.ru%20"+fmt(d),"_blank")};
+/* Свеча и музыка */
+$id("btnBlow").onclick=function(){$id("flame").style.display="none";
+ $id("festiveMsg").textContent="Свеча задута! Загадывай желание 🎉";};
+var SONG=[[392,.4],[392,.2],[440,.6],[392,.6],[523,.6],[494,1.1],
+ [392,.4],[392,.2],[440,.6],[392,.6],[587,.6],[523,1.1],
+ [392,.4],[392,.2],[784,.6],[659,.6],[523,.6],[587,.6],[494,1.1],
+ [698,.4],[698,.2],[659,.6],[523,.6],[587,.6],[523,1.4]];
+function playSong(){try{var ctx=new (window.AudioContext||window.webkitAudioContext)();
+ var t=ctx.currentTime;
+ SONG.forEach(function(n){var o=ctx.createOscillator(),g=ctx.createGain();
+  o.type="triangle";o.frequency.value=n[0];
+  g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(.25,t+.03);
+  g.gain.exponentialRampToValueAtTime(.0001,t+n[1]);
+  o.connect(g);g.connect(ctx.destination);o.start(t);o.stop(t+n[1]+.05);t+=n[1]*1.15;});}catch(e){}}
+$id("btnSong").onclick=playSong;
+/* Конфетти */
+function launchConfetti(){var cv=$id("confettiCv"),ctx=cv.getContext("2d");
+ cv.width=innerWidth;cv.height=innerHeight;
+ var P=[],i,cx=["#ffd54a","#ff6b35","#6fe28a","#8a7bd8","#ff5fa2"];
+ for(i=0;i<140;i++)P.push({x:Math.random()*cv.width,y:-20-Math.random()*cv.height*.5,
+  s:4+Math.random()*6,c:cx[i%5],vy:2+Math.random()*4,vx:-1+Math.random()*2,r:Math.random()*6});
+ var n=0;
+ (function draw(){ctx.clearRect(0,0,cv.width,cv.height);var j;
+  for(j=0;j<P.length;j++){var p=P[j];p.y+=p.vy;p.x+=p.vx;p.r+=.06;
+   ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.r);ctx.fillStyle=p.c;
+   ctx.fillRect(-p.s/2,-p.s/2,p.s,p.s*.6);ctx.restore();}
+  if(n++<260)requestAnimationFrame(draw);else ctx.clearRect(0,0,cv.width,cv.height);})();}
+/* Семья */
+function famLoad(){try{return JSON.parse(localStorage.getItem("bd_family"))||[]}catch(e){return[]}}
+function famRender(){var arr=famLoad(),html="",i,today=new Date();today.setHours(0,0,0,0);
+ for(i=0;i<arr.length;i++){
+  var p=arr[i].d.split("."),pd=new Date(+p[2],+p[1]-1,+p[0]);
+  var diff=Math.round((BD-pd)/86400000),line;
+  if(diff>0)line="<b>"+arr[i].n+"</b> старше тебя на <b>"+diff+"</b> дн.";
+  else if(diff<0)line="<b>"+arr[i].n+"</b> моложе тебя на <b>"+(-diff)+"</b> дн.";
+  else line="Вы с <b>"+arr[i].n+"</b> ровесники! 🎉";
+  html+='<div class="fam-item">🧑 '+line+' <span class="link-y" style="cursor:pointer;float:right" data-i="'+i+'" onclick="famDel(this)">✕</span></div>';}
+ $id("famList").innerHTML=html||'<div class="center">Добавь близких — увидишь, кто на сколько дней опережает тебя.</div>';}
+function famDel(el){var arr=famLoad();arr.splice(+el.getAttribute("data-i"),1);
+ localStorage.setItem("bd_family",JSON.stringify(arr));famRender()}
+$id("btnFam").onclick=function(){var n=$id("famName").value.trim(),d=$id("famDate").value.trim();
+ var p=d.split(".");if(!n||p.length!==3||+p[1]<1||+p[1]>12){alert("Введи имя и дату в формате 04.07.1978");return}
+ var arr=famLoad();arr.push({n:n,d:d});
+ localStorage.setItem("bd_family",JSON.stringify(arr));
+ $id("famName").value="";$id("famDate").value="";famRender()};
+/* Подарки */
+function giftLoad(){try{return JSON.parse(localStorage.getItem("bd_gifts"))||[]}catch(e){return[]}}
+function giftRender(){var arr=giftLoad(),html="",i;
+ arr.sort(function(a,b){return (a.done?1:0)-(b.done?1:0)});
+ var open=0;for(i=0;i<arr.length;i++)if(!arr[i].done)open++;
+ $id("giftCount").innerHTML=arr.length?("Идей: "+arr.length+" · осталось выбрать: "+open):"";
+ for(i=0;i<arr.length;i++)
+  html+='<div class="gift-item'+(arr[i].done?" done":"")+'"><input type="checkbox" '+
+   (arr[i].done?"checked":"")+' onchange="giftToggle('+i+')"><span style="flex:1">'+arr[i].t+
+   (arr[i].f?' <span class="tag-y">→ '+arr[i].f+'</span>':"")+
+   '</span><span class="link-y" style="cursor:pointer" onclick="giftDel('+i+')">✕</span></div>';
+ $id("giftList").innerHTML=html||'<div class="center">Пока пусто — добавь первую идею 🎁</div>';}
+function giftSave(a){localStorage.setItem("bd_gifts",JSON.stringify(a))}
+function giftToggle(i){var a=giftLoad();a[i].done=!a[i].done;giftSave(a);giftRender()}
+function giftDel(i){var a=giftLoad();a.splice(i,1);giftSave(a);giftRender()}
+function giftAdd(){var t=$id("giftIn").value.trim();
+ if(!t)return;var f=$id("giftFor").value.trim();
+ var a=giftLoad();a.push({t:t,f:f,done:false});giftSave(a);
+ $id("giftIn").value="";$id("giftFor").value="";giftRender()}
+$id("btnGift").onclick=giftAdd;
+$id("giftIn").onkeydown=function(e){if(e.key==="Enter")giftAdd()};
+$id("giftFor").onkeydown=function(e){if(e.key==="Enter")giftAdd()};
+famRender();giftRender();
+/* PDF */
+$id("btnPdf").onclick=function(){window.print()};
+</script>
+<script>if("serviceWorker" in navigator){window.addEventListener("load",function(){navigator.serviceWorker.register("sw.js")});}</script></body>
+</html>
